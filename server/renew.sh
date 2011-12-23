@@ -36,10 +36,11 @@ function main() {
   
   renewJoomlaFilesAndDatabase
   activateFileConfigurationOnlineIfExist ${packagedestination}
-  
-  removeEverythingAt ${packagedestination}/cache
-  removeEverythingAt ${packagedestination}/log
-  removeEverythingAt ${packagedestination}/tmp
+
+  # empty directory in case they were not empty in zip file  
+  removeEverythingAt ${packagedestination}cache
+  removeEverythingAt ${packagedestination}log
+  removeEverythingAt ${packagedestination}tmp
   
   changeUnixOwnerAndUserGroup ${packagedestination}
   setUnixMinimumRequiredPermissions ${packagedestination}
@@ -48,6 +49,23 @@ function main() {
   updateJoomlaModule
   unlockDirectory ${packagedestination}
   #appendRedirectRulesInHtaccess
+
+  assertSiteIsRunning
+}
+
+function assertSiteIsRunning() {
+
+    # We use the -O option of wget which allows us to specify the name of the file into which
+    # wget dumps the page contents. We specify - to get the dump onto standard output and collect
+    # that into the variable content. You can add the -q quiet option to turn off's wget output.
+    content=$(wget ${demoSiteLiveUrl} -q -O -);
+
+    if [[ ${content} == *${assertRunningSite}* ]]; then
+        echo "Site has been deployed successfuly";
+    else
+        echo "Site is not running, did not found ${assertRunningSite} at ${demoSiteLiveUrl}";
+        exit 1;
+    fi
 }
 
 
@@ -106,8 +124,8 @@ function renewJoomlaFilesAndDatabase() {
         exit 1
   fi
 
-  # delete sql file unpacked from package
-  #rm ${packagedestination}/${DBTABLENAME}.sql
+  echo "delete ${packagedestination}${mysqltargetablename}.sql file unpacked from zip package"
+  rm ${packagedestination}${mysqltargetablename}.sql 
 }
 
 
@@ -152,11 +170,16 @@ function setUnixMinimumRequiredPermissions() {
   
   # search all files  and set to 444 or r--r--r--
   find $1 -type f -exec chmod 444 {} \;
-
+  
   #some directories have to be writable, so set to 755 or rwxr-xr-x
   chmod 755 ${packagedestination}/cache
   chmod 755 ${packagedestination}/logs
   
+  chmod g+w ${packagedestination}/cache 
+  find ${packagedestination}/cache -type f  -exec chmod 666 {} \;
+  #find ${packagedestination}/cache -type d -exec chmod 777 {} \;
+
+ 
   chmod 755 ${packagedestination}
 }
 
@@ -216,6 +239,17 @@ function readConfigFile() {
 	source "$configfile"
 }
 
-echo "renew.sh v 1.0.2 - a script to renew your Joomla! demo site - by www.cedricwalter.com"
+echo "renew.sh v 1.0.3 - a script to renew your Joomla! demo site - by www.cedricwalter.com"
 echo "See http://wiki.waltercedric.com/index.php?title=Demo_site_for_Joomla"
-main $1
+echo "Use http://www.corntab.com/pages/crontab-gui to set up your crontab, recommended is to renew your demo site every 30 minutes"
+
+readConfigFile $1
+log=$(main $1)
+if [ $? -ne 0 ]; then
+   subject="renew.sh v 1.0.3 has encountered some errors";
+   echo ${log} | mail -s ${subject} ${reportingEmail}
+fi
+
+if [[ ${emailOnSuccess} == *true* ]]; then
+   echo ${log} | mail -s "success" "${reportingEmail}"
+fi
