@@ -1,1 +1,34 @@
-This file was created by JetBrains PhpStorm 3.0 for binding GitHub repository
+Automatic refresh of Joomla! demo site the easy way
+
+These windows/bash scripts increased
+security and are trying to standardized
+how to create, update and maintain
+Joomla! demo site.
+
+With this project you will be able to
+maintain multiple Joomla! demo site and
+easily deploy new version of them.
+
+
+This project is stable as I use it in
+production for maintainign my 3 Joomla!
+demo site
+
+http://demo-joomla-1.0.waltercedric.com/
+http://demo-joomla-1.5.waltercedric.com/
+http://demo-joomla-1.6.waltercedric.com/
+
+Architecture
+
+1 script (snapshotit.bat ) per Joomla! instance to create snapshots (files+ database) and save the result in a zip file.
+1 generic scripts (renew.sh) that renew an instance of Joomla! (files+ database) and secure it at the same time
+
+Prerequisites
+
+An access to a Linux bash on your server, ideally as root
+The possibility to define new crontab entries
+
+Up to date documentation is located at http://wiki.waltercedric.com/index.php?title=Demo_site_for_Joomla
+
+License
+* GNU/GPL v3
