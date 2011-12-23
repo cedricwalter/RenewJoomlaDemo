@@ -1,0 +1,6 @@
+snapshotit.bat
+snapshotit.excludes
+.buildpath
+.classpath
+cache/*
+tmp/*

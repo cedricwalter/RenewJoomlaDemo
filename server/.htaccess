@@ -1,0 +1,17 @@
+# Do not allow any user to access this file - to copy in all .htaccess
+<Files .htaccess>
+order allow,deny
+deny from all
+</Files>
+
+#force admin area with .htaccess password
+AuthType Basic
+AuthUserFile .htpasswd
+AuthGroupFile /dev/null
+AuthName "Demo Administrator Area"
+<Limit GET POST>
+require valid-user
+</Limit>
+
+
+
